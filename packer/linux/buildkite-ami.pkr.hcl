@@ -14,7 +14,7 @@ variable "arch" {
 
 variable "instance_type" {
   type    = string
-  default = "m7a.xlarge"
+  default = "m6i.xlarge"
 }
 
 variable "region" {
@@ -40,8 +40,8 @@ variable "is_released" {
 data "amazon-ami" "al2023" {
   filters = {
     architecture        = var.arch
-    name                = "al2023-ami-minimal-2023.5.20240903.0-*"
-    virtualization-type = "hvm"
+    name                = "debian-11-*"
+    # virtualization-type = "hvm"
   }
   most_recent = true
   owners      = ["amazon"]
@@ -49,13 +49,12 @@ data "amazon-ami" "al2023" {
 }
 
 source "amazon-ebs" "elastic-ci-stack-ami" {
-  ami_description                           = "Buildkite Elastic Stack (Amazon Linux 2023 w/ docker)"
-  ami_groups                                = ["all"]
-  ami_name                                  = "buildkite-stack-linux-${var.arch}-${replace(timestamp(), ":", "-")}"
+  ami_description                           = "Buildkite Elastic Stack (Debian Bullseye w/ docker)"
+  ami_name                                  = "buildkite-stack-debian-linux-${var.arch}-${replace(timestamp(), ":", "-")}"
   instance_type                             = var.instance_type
   region                                    = var.region
   source_ami                                = data.amazon-ami.al2023.id
-  ssh_username                              = "ec2-user"
+  ssh_username                              = "admin"
   ssh_clear_authorized_keys = true
   temporary_security_group_source_public_ip = true
 
@@ -65,7 +64,7 @@ source "amazon-ebs" "elastic-ci-stack-ami" {
 
   tags = {
     Name          = "elastic-ci-stack-linux-${var.arch}"
-    OSVersion     = "Amazon Linux 2023"
+    OSVersion     = "Debian 11 (Bullseye)"
     BuildNumber   = var.build_number
     AgentVersion  = var.agent_version
     IsReleased    = var.is_released
